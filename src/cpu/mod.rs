@@ -208,10 +208,185 @@ impl Cpu {
                 }
             },
             Instruction::INC(target) => match target {
-                _ => panic!("TODO: implement ADDHL"),
+                IncDecTarget::A => {
+                    let value = self.registers.a;
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = false;
+                    self.registers.f.carry = did_overflow;
+                    self.registers.f.half_carry = (value & 0xF) + (1 & 0xF) > 0xF;
+                    self.registers.a = new_value;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::B => {
+                    let value = self.registers.b;
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = false;
+                    self.registers.f.carry = did_overflow;
+                    self.registers.f.half_carry = (value & 0xF) + (1 & 0xF) > 0xF;
+                    self.registers.b = new_value;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::C => {
+                    let value = self.registers.c;
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = false;
+                    self.registers.f.carry = did_overflow;
+                    self.registers.f.half_carry = (value & 0xF) + (1 & 0xF) > 0xF;
+                    self.registers.c = new_value;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::D => {
+                    let value = self.registers.d;
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = false;
+                    self.registers.f.carry = did_overflow;
+                    self.registers.f.half_carry = (value & 0xF) + (1 & 0xF) > 0xF;
+                    self.registers.d = new_value;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::E => {
+                    let value = self.registers.e;
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = false;
+                    self.registers.f.carry = did_overflow;
+                    self.registers.f.half_carry = (value & 0xF) + (1 & 0xF) > 0xF;
+                    self.registers.e = new_value;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::H => {
+                    let value = self.registers.h;
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = false;
+                    self.registers.f.carry = did_overflow;
+                    self.registers.f.half_carry = (value & 0xF) + (1 & 0xF) > 0xF;
+                    self.registers.h = new_value;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::L => {
+                    let value = self.registers.l;
+                    let (new_value, did_overflow) = value.overflowing_add(1);
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = false;
+                    self.registers.f.carry = did_overflow;
+                    self.registers.f.half_carry = (value & 0xF) + (1 & 0xF) > 0xF;
+                    self.registers.l = new_value;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::BC => {
+                    let value = self.registers.get_bc();
+                    self.registers.set_bc(value.wrapping_add(1));
+                    self.pc.wrapping_add(2)
+                }
+                IncDecTarget::DE => {
+                    let value = self.registers.get_de();
+                    self.registers.set_de(value.wrapping_add(1));
+                    self.pc.wrapping_add(2)
+                }
+                IncDecTarget::SP => {
+                    let value = self.sp;
+                    self.sp = value.wrapping_add(1);
+                    self.pc.wrapping_add(2)
+                }
+                IncDecTarget::HL => {
+                    let value = self.bus.read_byte(self.registers.get_hl());
+                    let new_value = self.add(value);
+                    self.bus.write_byte(self.registers.get_hl(), new_value);
+                    self.pc.wrapping_add(3)
+                }
             },
             Instruction::DEC(target) => match target {
-                _ => panic!("TODO: implement DEC"),
+                IncDecTarget::A => {
+                    let value = self.registers.a;
+                    let new_value = value.wrapping_sub(1);
+                    self.registers.a = new_value;
+                    self.registers.f.half_carry = (value & 0xF) == 0;
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = true;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::B => {
+                    let value = self.registers.b;
+                    let new_value = value.wrapping_sub(1);
+                    self.registers.b = new_value;
+                    self.registers.f.half_carry = (value & 0xF) == 0;
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = true;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::C => {
+                    let value = self.registers.c;
+                    let new_value = value.wrapping_sub(1);
+                    self.registers.c = new_value;
+                    self.registers.f.half_carry = (value & 0xF) == 0;
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = true;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::D => {
+                    let value = self.registers.d;
+                    let new_value = value.wrapping_sub(1);
+                    self.registers.d = new_value;
+                    self.registers.f.half_carry = (value & 0xF) == 0;
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = true;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::E => {
+                    let value = self.registers.e;
+                    let new_value = value.wrapping_sub(1);
+                    self.registers.e = new_value;
+                    self.registers.f.half_carry = (value & 0xF) == 0;
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = true;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::H => {
+                    let value = self.registers.h;
+                    let new_value = value.wrapping_sub(1);
+                    self.registers.h = new_value;
+                    self.registers.f.half_carry = (value & 0xF) == 0;
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = true;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::L => {
+                    let value = self.registers.l;
+                    let new_value = value.wrapping_sub(1);
+                    self.registers.l = new_value;
+                    self.registers.f.half_carry = (value & 0xF) == 0;
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = true;
+                    self.pc.wrapping_add(1)
+                }
+                IncDecTarget::BC => {
+                    self.registers
+                        .set_bc(self.registers.get_bc().wrapping_sub(1));
+                    self.pc.wrapping_add(2)
+                }
+                IncDecTarget::DE => {
+                    self.registers
+                        .set_de(self.registers.get_de().wrapping_sub(1));
+                    self.pc.wrapping_add(2)
+                }
+                IncDecTarget::SP => {
+                    self.sp = self.sp.wrapping_sub(1);
+                    self.pc.wrapping_add(2)
+                }
+                IncDecTarget::HL => {
+                    let target = self.registers.get_hl();
+                    let new_value = self.bus.read_byte(target).wrapping_sub(1);
+                    self.bus.write_byte(target, new_value);
+                    self.registers.f.zero = new_value == 0;
+                    self.registers.f.subtract = true;
+                    self.registers.f.half_carry = (new_value & 0xF) == 0;
+                    self.pc.wrapping_add(3)
+                }
             },
             Instruction::RLA => {
                 panic!("TODO: implement RLA");
@@ -365,6 +540,15 @@ mod tests {
     }
 
     #[test]
+    fn test_overflow_sub_sanity() {
+        let a: u16 = 0x0000;
+        let b: u16 = 0x0001;
+        let (result, did_underflow) = a.overflowing_sub(b);
+        assert_eq!(result, 0xFFFF);
+        assert!(did_underflow);
+    }
+
+    #[test]
     fn test_basic_add_b() {
         let cpu = test_instruction!(Instruction::ADD(ArithmeticTarget::B), a => 0x1, b => 0x3);
 
@@ -410,5 +594,19 @@ mod tests {
 
         assert_eq!(cpu.registers.get_hl(), 0x00);
         check_flags!(cpu, zero => true, subtract => false, half_carry => true, carry => true);
+    }
+
+    #[test]
+    fn test_dec_a() {
+        let cpu = test_instruction!(Instruction::DEC(IncDecTarget::A), a => 0x01);
+        assert_eq!(cpu.registers.a, 0x00);
+        check_flags!(cpu, zero => true, subtract => true, half_carry => false, carry => false);
+    }
+
+    #[test]
+    fn test_dec_a_w_hc() {
+        let cpu = test_instruction!(Instruction::DEC(IncDecTarget::A), a => 0x10);
+        assert_eq!(cpu.registers.a, 0x0F);
+        check_flags!(cpu, zero => false, subtract => true, half_carry => true, carry => false);
     }
 }
